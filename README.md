@@ -1,19 +1,25 @@
 # docker-apache-drill
 
-apache drill docker image based on java:8-jre-alpine
+[![](https://imagelayers.io/badge/smizy/apache-drill:1.6-alpine.svg)](https://imagelayers.io/?images=smizy/apache-drill:1.6-alpine 'Get your own badge on imagelayers.io')
 
-## run embedded mode
+apache-drill docker image based on java:8-jre-alpine
+
+## run drill server without zookeeper
 ```
 docker run \
--i \
+--name drill-1 \
 -p 8047:8047 \
 -e DRILL_HEAP=512M \
 -e DRILL_MAX_DIRECT_MEMEORY=1G \
--d smizy/apache-drill:1.6-alpine \
-embedded
+-d smizy/apache-drill:1.6-alpine 
 ```
 
-## run distributed mode(with zookeeper)
+## run drill client shell
+```
+docker exec -it drill-1 drill-conf
+```
+
+## run drill server with zookeeper (distributed mode)
 ```
 # network
 docker create netwrok vnet
@@ -34,8 +40,7 @@ docker run \
 -e DRILL_HEAP=512M \
 -e DRILL_MAX_DIRECT_MEMEORY=1G \
 -e DRILL_ZOOKEEPER_QUORUM=zookeeper-1.vnet:2181,zookeeper-2.vnet:2181,zookeeper-3.vnet:2181 \
--d smizy/apache-drill:1.6-alpine \
-drillbit
+-d smizy/apache-drill:1.6-alpine 
 ```
 
 # mustache.sh LICENSE
