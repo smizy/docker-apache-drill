@@ -173,7 +173,7 @@ docker $(docker-machine config node-a-$i) run \
 done
 
 # check drill webui
-open http://$(docker-machine config node-a-1):8047
+open http://$(docker-machine ip node-a-1):8047
 
 # Query json data on hdfs with apache-drill
 $ echo '{ a:1, b:2, c:3}' > test.json
