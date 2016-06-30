@@ -1,7 +1,7 @@
 FROM java:8-jre-alpine
 MAINTAINER smizy
 
-ENV DRILL_VERSION           1.6.0
+ENV DRILL_VERSION           1.7.0
 ENV DRILL_HOME              /usr/local/apache-drill-${DRILL_VERSION}
 ENV DRILL_CONF_DIR          ${DRILL_HOME}/conf
 ENV DRILL_STORAGE_CONF_DIR  ${DRILL_HOME}/storage.conf
@@ -35,10 +35,11 @@ RUN set -x \
     && chown -R drill:drill \
         ${DRILL_HOME} \
         ${DRILL_LOG_DIR} \
-    && sed -i.bk 's/^\(DRILL\)/#\1/g' ${DRILL_CONF_DIR}/drill-env.sh 
+    && sed -i.bk -e 's/^\(DRILL\)/#\1/g' -e 's/MaxPermSize/MaxMetaspaceSize/g' ${DRILL_CONF_DIR}/drill-env.sh 
 
-COPY bin/*  /usr/local/bin/ 
 COPY etc/*  ${DRILL_CONF_DIR}/
+COPY bin/*  /usr/local/bin/ 
+COPY lib/*  /usr/local/lib/ 
  
 VOLUME ["${DRILL_LOG_DIR}", "${DRILL_STORAGE_CONF_DIR}"]
 

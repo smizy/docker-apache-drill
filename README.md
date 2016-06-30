@@ -4,25 +4,13 @@
 
 apache-drill docker image based on java:8-jre-alpine
 
-## run drill server without zookeeper
-```
-docker run \
---name drill-1 \
--p 8047:8047 \
--e DRILL_HEAP=512M \
--e DRILL_MAX_DIRECT_MEMEORY=1G \
--d smizy/apache-drill:1.6-alpine 
-```
+## run drill server (pseudo-distributed mode) 
 
-## run drill client shell
-```
-docker exec -it drill-1 drill-conf
-```
+run on bridge network in single docker host
 
-## run drill server with zookeeper (distributed mode on single docker host)
 ```
 # network
-docker create netwrok vnet
+docker netwrok create vnet
 
 # zookeeper
 for i in 1 2 3; do docker run \
@@ -42,21 +30,41 @@ docker run \
 -e DRILL_HEAP=512M \
 -e DRILL_MAX_DIRECT_MEMEORY=1G \
 -e DRILL_ZOOKEEPER_QUORUM=zookeeper-1.vnet:2181,zookeeper-2.vnet:2181,zookeeper-3.vnet:2181 \
--d smizy/apache-drill:1.6-alpine 
+-d smizy/apache-drill:1.7-alpine 
 
+# drill client
+docker exec -it drillbit-1 drill-conf
+0: jdbc:drill:> show databases;
++---------------------+
+|     SCHEMA_NAME     |
++---------------------+
+| INFORMATION_SCHEMA  |
+| cp.default          |
+| dfs.default         |
+| dfs.root            |
+| dfs.tmp             |
+| sys                 |
++---------------------+
+6 rows selected (2.349 seconds)
+0: jdbc:drill:> !quit
 ```
 
-# run drill server with zookeeper (distributed mode on multihost overlay network)
-```
-# create machine
+# run drill server (distributed mode)
 
-# manager
+run on overlay network in multiple docker host with swarm
+```
+
+# create manager node
 for i in 1 2 3; do \
   docker-machine create \
   -d virtualbox \
   --virtualbox-memory 384 \
   --engine-opt="cluster-store=consul://localhost:8500" \
   --engine-opt="cluster-advertise=eth1:2376" \
+  --swarm \
+  --swarm-discovery consul://localhost:8500 \
+  --swarm-master \
+  --swarm-opt replication \
   manager-$i 
   
   # consul server 
@@ -73,29 +81,37 @@ done
 docker $(docker-machine config manager-1) exec -it consul-server consul join \
   $(docker-machine ip manager-1) $(docker-machine ip manager-2) $(docker-machine ip manager-3)
 
-# datanode
-for i in 1; do \
+# check consul members manager-*
+docker $(docker-machine config manager-1) exec -it consul-server consul members
+
+# create data node
+for i in 1 2 3; do \
   docker-machine create \
   -d virtualbox \
-  --virtualbox-memory 1024 \
+  --virtualbox-memory 512 \
   --engine-opt="cluster-store=consul://localhost:8500" \
   --engine-opt="cluster-advertise=eth1:2376" \
-  node-a-$i; 
+  --swarm \
+  --swarm-discovery consul://localhost:8500 \
+  node-d-$i; 
   
-  docker $(docker-machine config node-a-$i) run -d \
+  docker $(docker-machine config node-d-$i) run -d \
   --name consul-agent \
   --net host \
   --restart unless-stopped \
   gliderlabs/consul-agent:0.6 \
-  -bind $(docker-machine ip node-a-$i)
+  -bind $(docker-machine ip node-d-$i)
   
   # consul-agent join
-  docker $(docker-machine config node-a-$i) exec -it consul-agent consul join \
+  docker $(docker-machine config node-d-$i) exec -it consul-agent consul join \
   $(docker-machine ip manager-1) $(docker-machine ip manager-2) $(docker-machine ip manager-3)    
 done
 
+# check consul members contain manager-* and node-d-*
+docker $(docker-machine config node-d-1) exec -it consul-agent consul members
+ 
 # registrator
-for i in manager-1 manager-2 manager-3 node-a-1; do \
+for i in manager-1 manager-2 manager-3 for i in node-d-1 node-d-2 node-d-3; do \
   docker $(docker-machine config ${i}) run -d \
   --name registrator \
   --net host \
@@ -103,6 +119,9 @@ for i in manager-1 manager-2 manager-3 node-a-1; do \
   -v /var/run/docker.sock:/tmp/docker.sock \
   gliderlabs/registrator -internal  consul://localhost:8500 
 done 
+
+# create overlay network
+docker $(docker-machine config manager-1) network create -d overlay vnet
 
 # zookeeper
 for i in 1 2 3; do \
@@ -143,7 +162,7 @@ done
 
 # datanode
 for i in 1; do \
-docker $(docker-machine config node-a-$i) run \
+docker $(docker-machine config node-d-$i) run \
 --name datanode-$i \
 --net vnet \
 -h datanode-$i.vnet \
@@ -160,7 +179,7 @@ docker exec -it -u hdfs datanode-1 hadoop jar share/hadoop/mapreduce/hadoop-mapr
 
 # drill
 for i in 1; do \
-docker $(docker-machine config node-a-$i) run \
+docker $(docker-machine config node-d-$i) run \
 --name drillbit-$i \
 --net vnet \
 -h drillbit-$i.vnet \
@@ -173,7 +192,7 @@ docker $(docker-machine config node-a-$i) run \
 done
 
 # check drill webui
-open http://$(docker-machine ip node-a-1):8047
+open http://$(docker-machine ip node-d-1):8047
 
 # Query json data on hdfs with apache-drill
 $ echo '{ a:1, b:2, c:3}' > test.json
@@ -210,4 +229,6 @@ select * from dfs.root.`output/test.json`
 ```
 
 # mustache.sh LICENSE
-* mustache.sh is BSD-license. See LICENSE.mustache. Copyright 2011 Richard Crowley. All rights reserved. 
+* BSD License. See LICENSE.mustache.
+* Source: https://github.com/rcrowley/mustache.sh
+* Copyright 2011 Richard Crowley. All rights reserved.
