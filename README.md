@@ -2,206 +2,95 @@
 
 [![](https://imagelayers.io/badge/smizy/apache-drill:1.6-alpine.svg)](https://imagelayers.io/?images=smizy/apache-drill:1.6-alpine 'Get your own badge on imagelayers.io')
 
-apache-drill docker image based on java:8-jre-alpine
+Apache Drill docker image based on alpine
 
-## run drill server (pseudo-distributed mode) 
-
-run on bridge network in single docker host
-
+## Usage
+### Small setup 
 ```
 # network
-docker netwrok create vnet
+docker network create vnet
 
-# zookeeper
-for i in 1 2 3; do docker run \
---name zookeeper-$i \
---net vnet \
--h zookeeper-$i.vnet \
--d smizy/zookeeper:3.4-alpine \
--server $i 3 \
-;done 
+# generate docker-compose.yml (zookeeper:1, drill:1)
+zookeeper=1 drillbit=1 ./make_docker_compose_yml.sh drill  > docker-compose.yml
 
-# drill
-docker run \
---name drillbit-1 \
---net vnet \
--h drillbit-1.vnet \
--p 8047:8047 \
--e DRILL_HEAP=512M \
--e DRILL_MAX_DIRECT_MEMEORY=1G \
--e DRILL_ZOOKEEPER_QUORUM=zookeeper-1.vnet:2181,zookeeper-2.vnet:2181,zookeeper-3.vnet:2181 \
--d smizy/apache-drill:1.7-alpine 
+# config test
+docker-compose config
 
-# drill client
+# load docker env as needed
+eval $(docker-machine env default)
+
+# run containers
+docker-compose up -d
+
+$ docker-compose ps
+   Name                  Command               State              Ports             
+-----------------------------------------------------------------------------------
+drillbit-1    entrypoint.sh drillbit           Up      0.0.0.0:8047->8047/tcp       
+zookeeper-1   entrypoint.sh -server 1 1 vnet   Up      2181/tcp, 2888/tcp, 3888/tcp
+
+# run query from web ui
+open http://$(docker-machine ip default):8047/query
+// Submit "SELECT * FROM cp.`employee.json` LIMIT 20" 
+
+# run query from drill shell client
 docker exec -it drillbit-1 drill-conf
-0: jdbc:drill:> show databases;
-+---------------------+
-|     SCHEMA_NAME     |
-+---------------------+
-| INFORMATION_SCHEMA  |
-| cp.default          |
-| dfs.default         |
-| dfs.root            |
-| dfs.tmp             |
-| sys                 |
-+---------------------+
-6 rows selected (2.349 seconds)
-0: jdbc:drill:> !quit
+
+0: jdbc:drill:> SELECT employee_id, full_name, position_id, position_title FROM cp.`employee.json` LIMIT 5;
++--------------+------------------+--------------+-------------------------+
+| employee_id  |    full_name     | position_id  |     position_title      |
++--------------+------------------+--------------+-------------------------+
+| 1            | Sheri Nowmer     | 1            | President               |
+| 2            | Derrick Whelply  | 2            | VP Country Manager      |
+| 4            | Michael Spence   | 2            | VP Country Manager      |
+| 5            | Maya Gutierrez   | 2            | VP Country Manager      |
+| 6            | Roberta Damstra  | 3            | VP Information Systems  |
++--------------+------------------+--------------+-------------------------+
+5 rows selected (0.25 seconds)
+
+# cleanup
+docker-compose stop
+docker-compose rm
+
 ```
 
-# run drill server (distributed mode)
+### Setup with HDFS
 
-run on overlay network in multiple docker host with swarm
 ```
+# generate docker-compose.yml 
+./make_docker_compose_yml.sh hdfs drill  > docker-compose.yml
 
-# create manager node
-for i in 1 2 3; do \
-  docker-machine create \
-  -d virtualbox \
-  --virtualbox-memory 384 \
-  --engine-opt="cluster-store=consul://localhost:8500" \
-  --engine-opt="cluster-advertise=eth1:2376" \
-  --swarm \
-  --swarm-discovery consul://localhost:8500 \
-  --swarm-master \
-  --swarm-opt replication \
-  manager-$i 
-  
-  # consul server 
-  docker $(docker-machine config manager-$i) run -d \
-  --name consul-server \
-  --net host \
-  --restart unless-stopped \
-  gliderlabs/consul-server:0.6 \
-  -server -bootstrap-expect 3  \
-  -bind $(docker-machine ip manager-$i) 
-done
+# config test
+docker-compose config
 
-# consul-server join
-docker $(docker-machine config manager-1) exec -it consul-server consul join \
-  $(docker-machine ip manager-1) $(docker-machine ip manager-2) $(docker-machine ip manager-3)
+# run containers
+docker-compose up -d
 
-# check consul members manager-*
-docker $(docker-machine config manager-1) exec -it consul-server consul members
+$ docker-compose ps
+    Name                   Command               State                 Ports                
+-------------------------------------------------------------------------------------------
+datanode-1      entrypoint.sh datanode           Up      50010/tcp, 50020/tcp, 50075/tcp    
+datanode-2      entrypoint.sh datanode           Up      50010/tcp, 50020/tcp, 50075/tcp    
+datanode-3      entrypoint.sh datanode           Up      50010/tcp, 50020/tcp, 50075/tcp    
+drillbit-1      entrypoint.sh drillbit           Up      0.0.0.0:8047->8047/tcp             
+journalnode-1   entrypoint.sh journalnode        Up      8480/tcp, 8485/tcp                 
+journalnode-2   entrypoint.sh journalnode        Up      8480/tcp, 8485/tcp                 
+journalnode-3   entrypoint.sh journalnode        Up      8480/tcp, 8485/tcp                 
+namenode-1      entrypoint.sh namenode-1         Up      0.0.0.0:32771->50070/tcp, 8020/tcp 
+namenode-2      entrypoint.sh namenode-2         Up      0.0.0.0:32772->50070/tcp, 8020/tcp 
+zookeeper-1     entrypoint.sh -server 1 3 vnet   Up      2181/tcp, 2888/tcp, 3888/tcp       
+zookeeper-2     entrypoint.sh -server 2 3 vnet   Up      2181/tcp, 2888/tcp, 3888/tcp       
+zookeeper-3     entrypoint.sh -server 3 3 vnet   Up      2181/tcp, 2888/tcp, 3888/tcp
 
-# create data node
-for i in 1 2 3; do \
-  docker-machine create \
-  -d virtualbox \
-  --virtualbox-memory 512 \
-  --engine-opt="cluster-store=consul://localhost:8500" \
-  --engine-opt="cluster-advertise=eth1:2376" \
-  --swarm \
-  --swarm-discovery consul://localhost:8500 \
-  node-d-$i; 
-  
-  docker $(docker-machine config node-d-$i) run -d \
-  --name consul-agent \
-  --net host \
-  --restart unless-stopped \
-  gliderlabs/consul-agent:0.6 \
-  -bind $(docker-machine ip node-d-$i)
-  
-  # consul-agent join
-  docker $(docker-machine config node-d-$i) exec -it consul-agent consul join \
-  $(docker-machine ip manager-1) $(docker-machine ip manager-2) $(docker-machine ip manager-3)    
-done
 
-# check consul members contain manager-* and node-d-*
-docker $(docker-machine config node-d-1) exec -it consul-agent consul members
- 
-# registrator
-for i in manager-1 manager-2 manager-3 for i in node-d-1 node-d-2 node-d-3; do \
-  docker $(docker-machine config ${i}) run -d \
-  --name registrator \
-  --net host \
-  --restart unless-stopped \
-  -v /var/run/docker.sock:/tmp/docker.sock \
-  gliderlabs/registrator -internal  consul://localhost:8500 
-done 
+# Query json data on hdfs 
+docker exec -it -u hdfs datanode-1 bash
 
-# create overlay network
-docker $(docker-machine config manager-1) network create -d overlay vnet
+bash-4.3$ hdfs dfs -mkdir -p /user/hdfs/output
+bash-4.3$ echo '{ a:1, b:2, c:3}' > /tmp/test.json
+bash-4.3$ hdfs dfs -put /tmp/test.json /user/hdfs/output/
 
-# zookeeper
-for i in 1 2 3; do \
-docker $(docker-machine config manager-$i) run \
---name zookeeper-$i \
---net vnet \
--h zookeeper-$i.vnet \
--e SERVICE_NAME=zookeeper \
--d smizy/zookeeper:3.4-alpine \
--server $i 3 
-done
-
-# journalnode
-for i in 1 2 3; do \
-docker $(docker-machine config manager-$i) run \
---name journalnode-$i \
---net vnet \
--h journalnode-$i.vnet \
---expose 8480 \
---expose 8485 \
--e SERVICE_NAME=journalnode \
--d smizy/hadoop-base:2.7.2-alpine \
-entrypoint.sh journalnode 
-done 
-
-# namenode
-for i in 1 2; do \
-docker $(docker-machine config manager-$i) run \
---name namenode-$i \
---net vnet \
--h namenode-$i.vnet \
---expose 8020 \
---expose 50070 \
--e SERVICE_NAME=namenode \
--d smizy/hadoop-base:2.7.2-alpine \
-entrypoint.sh namenode-$i 
-done 
-
-# datanode
-for i in 1; do \
-docker $(docker-machine config node-d-$i) run \
---name datanode-$i \
---net vnet \
--h datanode-$i.vnet \
---expose 50010 \
---expose 50020 \
---expose 50075 \
--e SERVICE_NAME=datanode \
--d smizy/hadoop-base:2.7.2-alpine \
-entrypoint.sh datanode 
-done 
-
-# check hdfs sample program
-docker exec -it -u hdfs datanode-1 hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.2.jar pi 3 3
-
-# drill
-for i in 1; do \
-docker $(docker-machine config node-d-$i) run \
---name drillbit-$i \
---net vnet \
--h drillbit-$i.vnet \
--p 8047:8047 \
--e DRILL_HEAP=512M \
--e DRILL_MAX_DIRECT_MEMEORY=1G \
--e DRILL_ZOOKEEPER_QUORUM=zookeeper-1.vnet:2181,zookeeper-2.vnet:2181,zookeeper-3.vnet:2181 \
--e SERVICE_NAME=drill \
--d smizy/apache-drill:1.6-alpine 
-done
-
-# check drill webui
-open http://$(docker-machine ip node-d-1):8047
-
-# Query json data on hdfs with apache-drill
-$ echo '{ a:1, b:2, c:3}' > test.json
-$ docker exec -it -u hdfs datanode-1 bash
-bash-4.3$ hdfs dfs -mkdir /user/hdfs
-bash-4.3$ hdfs dfs -mkdir /user/hdfs/output
-bash-4.3$ hdfs dfs -put test.json /user/hdfs/output/
-
-# update dfs storage setting (on drill webui)
+# update dfs storage setting 
+open http://$(docker-machine ip default):8047/storage/dfs
 
 {
   "type": "file",
@@ -223,12 +112,15 @@ bash-4.3$ hdfs dfs -put test.json /user/hdfs/output/
   :
   :
   
-## run query from WEB UI
+# run query from web ui
 select * from dfs.root.`output/test.json`
 
 ```
 
-# mustache.sh LICENSE
+* You can multi-host distributed hdfs/drill cluster with overlay network and swarm setup
+ 
+
+## mustache.sh LICENSE
 * BSD License. See LICENSE.mustache.
 * Source: https://github.com/rcrowley/mustache.sh
 * Copyright 2011 Richard Crowley. All rights reserved.
