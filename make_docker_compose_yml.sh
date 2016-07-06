@@ -113,7 +113,7 @@ services:
 $docker_compose_services
 
 networks:
-  $network_name:
+  vnet:
     external:
       name: $network_name 
 EOD
