@@ -47,6 +47,8 @@ docker exec -it drillbit-1 drill-conf
 +--------------+------------------+--------------+-------------------------+
 5 rows selected (0.25 seconds)
 
+0: jdbc:drill:> !quit
+
 # cleanup
 docker-compose stop
 docker-compose rm
@@ -81,13 +83,16 @@ zookeeper-1     entrypoint.sh -server 1 3 vnet   Up      2181/tcp, 2888/tcp, 388
 zookeeper-2     entrypoint.sh -server 2 3 vnet   Up      2181/tcp, 2888/tcp, 3888/tcp       
 zookeeper-3     entrypoint.sh -server 3 3 vnet   Up      2181/tcp, 2888/tcp, 3888/tcp
 
+# tail logs for a while
+docker-compose logs -f
 
 # Query json data on hdfs 
 docker exec -it -u hdfs datanode-1 bash
 
 bash-4.3$ hdfs dfs -mkdir -p /user/hdfs/output
-bash-4.3$ echo '{ a:1, b:2, c:3}' > /tmp/test.json
-bash-4.3$ hdfs dfs -put /tmp/test.json /user/hdfs/output/
+bash-4.3$ echo '{ a:1, b:2, c:3}' | hdfs dfs -put - /user/hdfs/output/test.json
+bash-4.3$ hdfs dfs -cat /user/hdfs/output/test.json
+{ a:1, b:2, c:3}
 
 # update dfs storage setting (adjust drillbit exposed port)
 open http://$(docker-machine ip default):32774/storage/dfs
@@ -114,6 +119,23 @@ open http://$(docker-machine ip default):32774/storage/dfs
   
 # run query from web ui
 select * from dfs.root.`output/test.json`
+
+# run query from drill shell client
+docker exec -it drillbit-1 drill-conf
+
+0: jdbc:drill:> select * from dfs.root.`output/test.json`;
++----+----+----+
+| a  | b  | c  |
++----+----+----+
+| 1  | 2  | 3  |
++----+----+----+
+1 row selected (0.448 seconds)
+
+0: jdbc:drill:> !quit
+
+# cleanup
+docker-compose stop
+docker-compose rm
 
 ```
 
