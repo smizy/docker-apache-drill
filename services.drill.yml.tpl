@@ -9,7 +9,7 @@ services:
     hostname: drillbit-${i}.${network_name}
     image: smizy/apache-drill:1.7-alpine
     ports: 
-      - 8047:8047
+      - 8047
     environment:
       - SERVICE_8047_NAME=drillbit
       - DRILL_HEAP=512M 

@@ -12,7 +12,7 @@
 
 DEBUG=${DEBUG:-0}
 
-# docker network default name
+# docker network name
 network_name=${network_name:-"vnet"}
 
 # zookeeper scale size
@@ -113,7 +113,7 @@ services:
 $docker_compose_services
 
 networks:
-  vnet:
+  $network_name:
     external:
       name: $network_name 
 EOD

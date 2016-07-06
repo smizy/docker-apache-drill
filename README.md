@@ -25,11 +25,11 @@ docker-compose up -d
 $ docker-compose ps
    Name                  Command               State              Ports             
 -----------------------------------------------------------------------------------
-drillbit-1    entrypoint.sh drillbit           Up      0.0.0.0:8047->8047/tcp       
+drillbit-1    entrypoint.sh drillbit           Up      0.0.0.0:32773->8047/tcp       
 zookeeper-1   entrypoint.sh -server 1 1 vnet   Up      2181/tcp, 2888/tcp, 3888/tcp
 
-# run query from web ui
-open http://$(docker-machine ip default):8047/query
+# run query from web ui (adjust drillbit exposed port)
+open http://$(docker-machine ip default):32773/query
 // Submit "SELECT * FROM cp.`employee.json` LIMIT 20" 
 
 # run query from drill shell client
@@ -71,7 +71,7 @@ $ docker-compose ps
 datanode-1      entrypoint.sh datanode           Up      50010/tcp, 50020/tcp, 50075/tcp    
 datanode-2      entrypoint.sh datanode           Up      50010/tcp, 50020/tcp, 50075/tcp    
 datanode-3      entrypoint.sh datanode           Up      50010/tcp, 50020/tcp, 50075/tcp    
-drillbit-1      entrypoint.sh drillbit           Up      0.0.0.0:8047->8047/tcp             
+drillbit-1      entrypoint.sh drillbit           Up      0.0.0.0:32774->8047/tcp             
 journalnode-1   entrypoint.sh journalnode        Up      8480/tcp, 8485/tcp                 
 journalnode-2   entrypoint.sh journalnode        Up      8480/tcp, 8485/tcp                 
 journalnode-3   entrypoint.sh journalnode        Up      8480/tcp, 8485/tcp                 
@@ -89,8 +89,8 @@ bash-4.3$ hdfs dfs -mkdir -p /user/hdfs/output
 bash-4.3$ echo '{ a:1, b:2, c:3}' > /tmp/test.json
 bash-4.3$ hdfs dfs -put /tmp/test.json /user/hdfs/output/
 
-# update dfs storage setting 
-open http://$(docker-machine ip default):8047/storage/dfs
+# update dfs storage setting (adjust drillbit exposed port)
+open http://$(docker-machine ip default):32774/storage/dfs
 
 {
   "type": "file",
@@ -117,7 +117,8 @@ select * from dfs.root.`output/test.json`
 
 ```
 
-* You can multi-host distributed hdfs/drill cluster with overlay network and swarm setup
+* You can run multi-host distributed hdfs/drill cluster with overlay "vnet" network
+(instead of bridge network) and swarm(v1.1) setup.
  
 
 ## mustache.sh LICENSE
