@@ -51,7 +51,7 @@ docker exec -it drillbit-1 drill-conf
 
 # cleanup
 docker-compose stop
-docker-compose rm
+docker-compose rm -v
 
 ```
 
@@ -135,7 +135,7 @@ docker exec -it drillbit-1 drill-conf
 
 # cleanup
 docker-compose stop
-docker-compose rm
+docker-compose rm -v
 
 ```
 
