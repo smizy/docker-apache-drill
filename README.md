@@ -1,6 +1,7 @@
 # docker-apache-drill
 
-[![](https://imagelayers.io/badge/smizy/apache-drill:1.8-alpine.svg)](https://imagelayers.io/?images=smizy/apache-drill:1.8-alpine 'Get your own badge on imagelayers.io')
+[![](https://images.microbadger.com/badges/image/smizy/apache-drill:1.8-alpine.svg)](http://microbadger.com/images/smizy/apache-drill:1.8-alpine "Get your own version badge on microbadger.com")
+[![](https://images.microbadger.com/badges/version/smizy/apache-drill:1.8-alpine.svg)](http://microbadger.com/images/smizy/apache-drill:1.8-alpine "Get your own version badge on microbadger.com")
 
 Apache Drill docker image based on alpine
 
