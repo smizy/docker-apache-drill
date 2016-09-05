@@ -1,11 +1,10 @@
-FROM java:8-jre-alpine
+FROM alpine:3.4
 MAINTAINER smizy
 
 ENV DRILL_VERSION            1.8.0
 ENV DRILL_HOME               /usr/local/apache-drill-${DRILL_VERSION}
 ENV DRILL_CONF_DIR           ${DRILL_HOME}/conf
 ENV DRILL_LOG_DIR            /var/log/drill
-ENV PATH                     $PATH:${DRILL_HOME}/bin
 ENV DRILL_HEAP               4G
 ENV DRILL_MAX_DIRECT_MEMORY  8G
 ENV DRILLBIT_MAX_PERM        512M
@@ -13,9 +12,13 @@ ENV DRILLBIT_CODE_CACHE_SIZE 1G
 ENV DRILL_CLUSTER_ID         drillbits1
 ENV DRILL_ZOOKEEPER_QUORUM   localhost:2181
 
+ENV JAVA_HOME   /usr/lib/jvm/default-jvm
+ENV PATH        $PATH:${JAVA_HOME}/bin:${DRILL_HOME}/bin
+
 RUN set -x \
     && apk --no-cache add \
         bash \
+        openjdk8-jre \
         su-exec \ 
     && mirror_url=$( \
         wget -q -O - http://www.apache.org/dyn/closer.cgi/drill/ \
