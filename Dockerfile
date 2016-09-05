@@ -1,19 +1,17 @@
 FROM java:8-jre-alpine
 MAINTAINER smizy
 
-ENV DRILL_VERSION           1.7.0
-ENV DRILL_HOME              /usr/local/apache-drill-${DRILL_VERSION}
-ENV DRILL_CONF_DIR          ${DRILL_HOME}/conf
-ENV DRILL_STORAGE_CONF_DIR  ${DRILL_HOME}/storage.conf
-ENV DRILL_LOG_DIR           /var/log/drill
-ENV PATH                    $PATH:${DRILL_HOME}/bin
-ENV DRILLBIT_LOG_PATH       ${DRILL_LOG_DIR}/drillbit.log
-ENV DRILLBIT_LOG_OUT_PATH   ${DRILL_LOG_DIR}/drillbit.out
-ENV DRILLBIT_QUERY_LOG_PATH ${DRILL_LOG_DIR}/drillbit_query.json
-ENV DRILL_HEAP              4G
-ENV DRILL_MAX_DIRECT_MEMORY 8G
-ENV DRILL_CLUSTER_ID        drillbits1
-ENV DRILL_ZOOKEEPER_QUORUM  localhost:2181
+ENV DRILL_VERSION            1.8.0
+ENV DRILL_HOME               /usr/local/apache-drill-${DRILL_VERSION}
+ENV DRILL_CONF_DIR           ${DRILL_HOME}/conf
+ENV DRILL_LOG_DIR            /var/log/drill
+ENV PATH                     $PATH:${DRILL_HOME}/bin
+ENV DRILL_HEAP               4G
+ENV DRILL_MAX_DIRECT_MEMORY  8G
+ENV DRILLBIT_MAX_PERM        512M
+ENV DRILLBIT_CODE_CACHE_SIZE 1G
+ENV DRILL_CLUSTER_ID         drillbits1
+ENV DRILL_ZOOKEEPER_QUORUM   localhost:2181
 
 RUN set -x \
     && apk --no-cache add \
@@ -31,17 +29,17 @@ RUN set -x \
     && adduser -D  -g '' -s /sbin/nologin drill \
     && mkdir -p \
         ${DRILL_LOG_DIR} \
-        ${DRILL_STORAGE_CONF_DIR} \
     && chown -R drill:drill \
         ${DRILL_HOME} \
         ${DRILL_LOG_DIR} \
-    && sed -i.bk -e 's/^\(DRILL\)/#\1/g' -e 's/MaxPermSize/MaxMetaspaceSize/g' ${DRILL_CONF_DIR}/drill-env.sh 
+    && sed -i.bk -e 's/MaxPermSize/MaxMetaspaceSize/g' ${DRILL_CONF_DIR}/drill-env.sh \
+    && sed -i.bk -e 's/MaxPermSize/MaxMetaspaceSize/g' ${DRILL_HOME}/bin/drill-config.sh  
 
 COPY etc/*  ${DRILL_CONF_DIR}/
 COPY bin/*  /usr/local/bin/ 
 COPY lib/*  /usr/local/lib/ 
  
-VOLUME ["${DRILL_LOG_DIR}", "${DRILL_STORAGE_CONF_DIR}"]
+VOLUME ["${DRILL_LOG_DIR}"]
 
 WORKDIR ${DRILL_HOME}
 

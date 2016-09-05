@@ -7,7 +7,7 @@ services:
     container_name: journalnode-${i}
     networks: ["${network_name}"]
     hostname: journalnode-${i}.${network_name}
-    image: smizy/hadoop-base:2.7.2-alpine
+    image: smizy/hadoop-base:2.7.3-alpine
     expose: [8480, 8485]
     environment:
       - SERVICE_8485_NAME=journalnode
@@ -22,7 +22,7 @@ services:
     container_name: namenode-${i}
     networks: ["${network_name}"]
     hostname: namenode-${i}.${network_name}
-    image: smizy/hadoop-base:2.7.2-alpine 
+    image: smizy/hadoop-base:2.7.3-alpine 
     expose: ["8020"]
     ports:  ["50070"]
     environment:
@@ -39,7 +39,7 @@ services:
     container_name: datanode-${i}
     networks: ["${network_name}"]
     hostname: datanode-${i}.${network_name}
-    image: smizy/hadoop-base:2.7.2-alpine
+    image: smizy/hadoop-base:2.7.3-alpine
     expose: ["50010", "50020", "50075"]
     environment:
       - SERVICE_50010_NAME=datanode

@@ -140,7 +140,7 @@ docker-compose rm -v
 ```
 
 * You can run multi-host distributed hdfs/drill cluster with overlay "vnet" network
-(instead of bridge network) and swarm(v1.1) setup.
+(instead of bridge network) and swarm(v1.11) setup.
  
 
 ## mustache.sh LICENSE
