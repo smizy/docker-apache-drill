@@ -1,7 +1,21 @@
 FROM alpine:3.4
 MAINTAINER smizy
 
-ENV DRILL_VERSION            1.8.0
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+
+LABEL \
+    org.label-schema.build-date=$BUILD_DATE \
+    org.label-schema.docker.dockerfile="/Dockerfile" \
+    org.label-schema.license="Apache License 2.0" \
+    org.label-schema.name="smizy/apache-drill" \
+    org.label-schema.url="https://github.com/smizy" \
+    org.label-schema.vcs-ref=$VCS_REF \
+    org.label-schema.vcs-type="Git" \
+    org.label-schema.vcs-url="https://github.com/smizy/docker-apache-drill"
+
+ENV DRILL_VERSION            $VERSION
 ENV DRILL_HOME               /usr/local/apache-drill-${DRILL_VERSION}
 ENV DRILL_CONF_DIR           ${DRILL_HOME}/conf
 ENV DRILL_LOG_DIR            /var/log/drill

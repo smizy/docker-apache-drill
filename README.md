@@ -2,6 +2,7 @@
 
 [![](https://images.microbadger.com/badges/image/smizy/apache-drill:1.8-alpine.svg)](http://microbadger.com/images/smizy/apache-drill:1.8-alpine "Get your own version badge on microbadger.com")
 [![](https://images.microbadger.com/badges/version/smizy/apache-drill:1.8-alpine.svg)](http://microbadger.com/images/smizy/apache-drill:1.8-alpine "Get your own version badge on microbadger.com")
+[![CircleCI](https://circleci.com/gh/smizy/docker-apache-drill.svg?style=shield&circle-token=dfe0035c074dee01c850f7def4ccab95c392b696)](https://circleci.com/gh/smizy/docker-apache-drill)
 
 Apache Drill docker image based on alpine
 
