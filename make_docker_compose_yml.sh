@@ -107,7 +107,7 @@ docker_compose_services="$(IFS=$'\n'; echo "${services[*]}")"
 
 # output docker-compose.yml v2 format
 cat <<EOD
-version: "2"
+version: "3"
 services:
 
 $docker_compose_services
