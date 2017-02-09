@@ -1,4 +1,4 @@
-FROM alpine:3.4
+FROM alpine:3.5
 MAINTAINER smizy
 
 ARG BUILD_DATE
@@ -32,7 +32,7 @@ ENV PATH        $PATH:${JAVA_HOME}/bin:${DRILL_HOME}/bin
 RUN set -x \
     && apk --no-cache add \
         bash \
-        openjdk8-jre \
+        openjdk8 \
         su-exec \ 
     && mirror_url=$( \
         wget -q -O - http://www.apache.org/dyn/closer.cgi/drill/ \
