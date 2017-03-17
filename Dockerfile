@@ -35,11 +35,16 @@ RUN set -x \
         openjdk8 \
         su-exec \ 
     && mirror_url=$( \
-        wget -q -O - http://www.apache.org/dyn/closer.cgi/drill/ \
-        | sed -n 's#.*href="\(http://ftp.[^"]*\)".*#\1#p' \
-        | head -n 1 \
-    ) \   
-    && wget -q -O - ${mirror_url}/drill-${DRILL_VERSION}/apache-drill-${DRILL_VERSION}.tar.gz \
+        wget -q -O - "http://www.apache.org/dyn/closer.cgi/?as_json=1" \
+        | grep "preferred" \
+        | sed -n 's#.*"\(http://*[^"]*\)".*#\1#p' \
+        ) \
+    # && mirror_url=$( \
+    #     wget -q -O - http://www.apache.org/dyn/closer.cgi/drill/ \
+    #     | sed -n 's#.*href="\(http://ftp.[^"]*\)".*#\1#p' \
+    #     | head -n 1 \
+    # ) \   
+    && wget -q -O - ${mirror_url}/drill/drill-${DRILL_VERSION}/apache-drill-${DRILL_VERSION}.tar.gz \
         | tar -xzf - -C /usr/local \
     ## user/dir/permmsion
     && adduser -D  -g '' -s /sbin/nologin -u 1000 docker \
