@@ -51,7 +51,7 @@ RUN set -x \
     && adduser -D  -g '' -s /sbin/nologin -G docker drill \
     && mkdir -p \
         ${DRILL_LOG_DIR} \
-    && chown -R drill:drill \
+    && chown -R drill:docker \
         ${DRILL_HOME} \
         ${DRILL_LOG_DIR} \
     && sed -i.bk -e 's/MaxPermSize/MaxMetaspaceSize/g' ${DRILL_CONF_DIR}/drill-env.sh \
