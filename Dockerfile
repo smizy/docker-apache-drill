@@ -48,7 +48,7 @@ RUN set -x \
         | tar -xzf - -C /usr/local \
     ## user/dir/permmsion
     && adduser -D  -g '' -s /sbin/nologin -u 1000 docker \
-    && adduser -D  -g '' -s /sbin/nologin drill \
+    && adduser -D  -g '' -s /sbin/nologin -G docker drill \
     && mkdir -p \
         ${DRILL_LOG_DIR} \
     && chown -R drill:drill \
