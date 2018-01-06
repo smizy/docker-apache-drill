@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM alpine:3.6
 
 ARG BUILD_DATE
 ARG VCS_REF
@@ -32,6 +32,8 @@ ENV PATH        $PATH:${JAVA_HOME}/bin:${DRILL_HOME}/bin
 RUN set -x \
     && apk --no-cache add \
         bash \
+        java-snappy-native \
+        libc6-compat \
         openjdk8 \
         su-exec \ 
     && mirror_url=$( \
