@@ -1,7 +1,7 @@
 # docker-apache-drill
 
-[![](https://images.microbadger.com/badges/image/smizy/apache-drill:1.12-alpine.svg)](http://microbadger.com/images/smizy/apache-drill:1.12-alpine "Get your own version badge on microbadger.com")
-[![](https://images.microbadger.com/badges/version/smizy/apache-drill:1.12-alpine.svg)](http://microbadger.com/images/smizy/apache-drill:1.12-alpine "Get your own version badge on microbadger.com")
+[![](https://images.microbadger.com/badges/image/smizy/apache-drill:1.13-alpine.svg)](http://microbadger.com/images/smizy/apache-drill:1.13-alpine "Get your own version badge on microbadger.com")
+[![](https://images.microbadger.com/badges/version/smizy/apache-drill:1.13-alpine.svg)](http://microbadger.com/images/smizy/apache-drill:1.13-alpine "Get your own version badge on microbadger.com")
 [![CircleCI](https://circleci.com/gh/smizy/docker-apache-drill.svg?style=shield&circle-token=dfe0035c074dee01c850f7def4ccab95c392b696)](https://circleci.com/gh/smizy/docker-apache-drill)
 
 Apache Drill docker image based on alpine
@@ -141,9 +141,6 @@ docker-compose rm -v
 
 ```
 
-* You can run multi-host distributed hdfs/drill cluster with overlay "vnet" network
-(instead of bridge network) and swarm(v1.12) setup.
- 
 
 ## mustache.sh LICENSE
 * BSD License. See LICENSE.mustache.
