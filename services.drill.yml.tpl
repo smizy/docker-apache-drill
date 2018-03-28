@@ -13,8 +13,8 @@ services:
     depends_on: ["zookeeper-1"]  
     environment:
       - SERVICE_8047_NAME=drillbit
-      - DRILL_HEAP=512M 
-      - DRILL_MAX_DIRECT_MEMORY=1G   
+      - DRILL_HEAP=${drill_heap} 
+      - DRILL_MAX_DIRECT_MEMORY=${drill_max_direct_memory}   
       - DRILL_ZOOKEEPER_QUORUM=${ZOOKEEPER_QUORUM} 
       ${SWARM_FILTER_DRILLBIT_${i}}
 ##/ drillbit

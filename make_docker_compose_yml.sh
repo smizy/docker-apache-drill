@@ -35,6 +35,12 @@ regionserver=${regionserver:-${datanode}}
 # drill scale size
 drillbit=${drillbit:-1}
 
+# drill heap size
+drill_heap=${drill_heap:-512M}
+
+# drill max direct memory size
+drill_max_direct_memory=${drill_max_direct_memory:-1G}
+
 debug() {
   [ ${DEBUG} -gt 0 ] && echo "[DEBUG] $@" 1>&2
 }
@@ -95,6 +101,8 @@ for component in $@; do
                       -e 's/${network_name}/'$network_name'/g'  \
                       -e 's/${scale_size}/'$scale_size'/g' \
                       -e 's/${ZOOKEEPER_QUORUM}/'$ZOOKEEPER_QUORUM'/g' \
+                      -e 's/${drill_heap}/'$drill_heap'/g' \
+                      -e 's/${drill_max_direct_memory}/'$drill_max_direct_memory'/g' \
                 | sed -e 's/${'${swarm_filter}'}/'"${filter}"'/g' \
             )
             services+=("$_part" "")
