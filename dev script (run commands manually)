@@ -1,0 +1,16 @@
+s3_bucket=s3a://my_s3 \
+s3_root_location=my_location \
+s3_access_key=my_access \
+s3_secret_key=my_secret \
+s3_connection_timeout=10000 \
+zookeeper=1 \
+drillbit=2 \
+./make_docker_compose_yml.sh drill  > docker-compose.yml
+
+sudo docker-compose stop
+sudo docker-compose rm -v
+================
+sudo docker build . -t sant/apache-drill:1.13.0-alpine --build-arg BUILD_DATE=11 --build-arg VCS_REF=test --build-arg VERSION=1.13.0
+sudo docker-compose up -d
+sudo docker-compose ps
+sudo docker exec -it drillbit-1 bash
