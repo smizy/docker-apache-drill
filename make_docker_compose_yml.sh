@@ -41,6 +41,13 @@ drill_heap=${drill_heap:-512M}
 # drill max direct memory size
 drill_max_direct_memory=${drill_max_direct_memory:-1G}
 
+# Drill S3 plugin config
+s3_bucket=${s3_bucket:-<>}
+s3_root_location=${s3_root_location:-<>}
+s3_access_key=${s3_access_key:-<>}
+s3_secret_key=${s3_secret_key:-<>}
+s3_connection_timeout=${s3_connection_timeout:-10000}
+
 debug() {
   [ ${DEBUG} -gt 0 ] && echo "[DEBUG] $@" 1>&2
 }
@@ -97,13 +104,18 @@ for component in $@; do
                 filter="- ${!swarm_filter}"            
             fi
             _part=$(echo "$part" \
-                | sed -e 's/${i}/'$i'/g' \
-                      -e 's/${network_name}/'$network_name'/g'  \
-                      -e 's/${scale_size}/'$scale_size'/g' \
-                      -e 's/${ZOOKEEPER_QUORUM}/'$ZOOKEEPER_QUORUM'/g' \
-                      -e 's/${drill_heap}/'$drill_heap'/g' \
-                      -e 's/${drill_max_direct_memory}/'$drill_max_direct_memory'/g' \
-                | sed -e 's/${'${swarm_filter}'}/'"${filter}"'/g' \
+                | sed -e 's|${i}|'$i'|g' \
+                      -e 's|${network_name}|'$network_name'|g'  \
+                      -e 's|${scale_size}|'$scale_size'|g' \
+                      -e 's|${ZOOKEEPER_QUORUM}|'$ZOOKEEPER_QUORUM'|g' \
+                      -e 's|${drill_heap}|'$drill_heap'|g' \
+                      -e 's|${drill_max_direct_memory}|'$drill_max_direct_memory'|g' \
+                      -e 's|${s3_bucket}|'$s3_bucket'|g' \
+                      -e 's|${s3_root_location}|'$s3_root_location'|g' \
+                      -e 's|${s3_access_key}|'$s3_access_key'|g' \
+                      -e 's|${s3_secret_key}|'$s3_secret_key'|g' \
+                      -e 's|${s3_connection_timeout}|'$s3_connection_timeout'|g' \
+                | sed -e 's|${'${swarm_filter}'}|'"${filter}"'|g' \
             )
             services+=("$_part" "")
         done
@@ -125,4 +137,3 @@ networks:
     external:
       name: $network_name 
 EOD
-
