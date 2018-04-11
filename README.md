@@ -4,7 +4,9 @@
 [![](https://images.microbadger.com/badges/version/smizy/apache-drill:1.13-alpine.svg)](http://microbadger.com/images/smizy/apache-drill:1.13-alpine "Get your own version badge on microbadger.com")
 [![CircleCI](https://circleci.com/gh/smizy/docker-apache-drill.svg?style=shield&circle-token=dfe0035c074dee01c850f7def4ccab95c392b696)](https://circleci.com/gh/smizy/docker-apache-drill)
 
-Apache Drill docker image based on alpine
+Apache Drill docker image based on alpine.
+
+NOTE: This is primarily Smizy's work (https://github.com/smizy), I am just experimenting few things.
 
 ## Usage
 ### Small setup 
