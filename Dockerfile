@@ -35,6 +35,7 @@ RUN set -x \
         java-snappy-native \
         libc6-compat \
         openjdk8 \
+        procps \
         su-exec \ 
     && mirror_url=$( \
         wget -q -O - "http://www.apache.org/dyn/closer.cgi/?as_json=1" \
