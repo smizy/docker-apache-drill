@@ -2,7 +2,7 @@ FROM alpine:3.6
 
 ARG BUILD_DATE
 ARG VCS_REF
-ARG VERSION
+ARG VERSION=1.17.0
 
 LABEL \
     maintainer="smizy" \
