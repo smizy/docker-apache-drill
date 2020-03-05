@@ -63,6 +63,8 @@ RUN set -x \
 COPY etc/*  ${DRILL_CONF_DIR}/
 COPY bin/*  /usr/local/bin/ 
 COPY lib/*  /usr/local/lib/ 
+
+RUN apk add --no-cache nss
  
 VOLUME ["${DRILL_LOG_DIR}"]
 
