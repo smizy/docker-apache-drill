@@ -65,6 +65,7 @@ COPY bin/*  /usr/local/bin/
 COPY lib/*  /usr/local/lib/ 
 
 RUN apk add --no-cache nss
+RUN apk add --no-cache nss-pam-ldapd
  
 VOLUME ["${DRILL_LOG_DIR}"]
 
