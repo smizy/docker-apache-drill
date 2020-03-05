@@ -2,7 +2,7 @@ FROM alpine:3.6
 
 ARG BUILD_DATE
 ARG VCS_REF
-ARG VERSION
+ARG VERSION=1.17.0
 
 LABEL \
     maintainer="smizy" \
@@ -63,6 +63,9 @@ RUN set -x \
 COPY etc/*  ${DRILL_CONF_DIR}/
 COPY bin/*  /usr/local/bin/ 
 COPY lib/*  /usr/local/lib/ 
+
+RUN apk add --no-cache nss
+RUN apk add --no-cache nss-pam-ldapd
  
 VOLUME ["${DRILL_LOG_DIR}"]
 
